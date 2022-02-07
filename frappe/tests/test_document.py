@@ -159,7 +159,7 @@ class TestDocument(unittest.TestCase):
 
 	def test_varchar_length(self):
 		d = self.test_insert()
-		d.subject = "abcde"*100
+		d.sender = "abcde"*100 + "@user.com"
 		self.assertRaises(frappe.CharacterLengthExceededError, d.save)
 
 	def test_xss_filter(self):
@@ -254,3 +254,8 @@ class TestDocument(unittest.TestCase):
 			'currency': 100000
 		})
 		self.assertEquals(d.get_formatted('currency', currency='INR', format="#,###.##"), '₹ 100,000.00')
+
+	def test_limit_for_get(self):
+		doc = frappe.get_doc("DocType", "DocType")
+		# assuming DocType has more that 3 Data fields
+		self.assertEquals(len(doc.get("fields", filters={"fieldtype": "Data"}, limit=3)), 3)

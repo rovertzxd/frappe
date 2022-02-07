@@ -258,16 +258,11 @@ frappe.Application = Class.extend({
 		if(frappe.boot) {
 			this.setup_workspaces();
 			frappe.model.sync(frappe.boot.docs);
-			$.extend(frappe._messages, frappe.boot.__messages);
 			this.check_metadata_cache_status();
 			this.set_globals();
 			this.sync_pages();
 			frappe.router.setup();
-			moment.locale("en");
-			moment.user_utc_offset = moment().utcOffset();
-			if(frappe.boot.timezone_info) {
-				moment.tz.add(frappe.boot.timezone_info);
-			}
+			this.setup_moment();
 			if(frappe.boot.print_css) {
 				frappe.dom.set_style(frappe.boot.print_css, "print-style");
 			}
@@ -521,6 +516,8 @@ frappe.Application = Class.extend({
 	},
 
 	show_update_available: () => {
+		if (frappe.boot.sysdefaults.disable_system_update_notification) return;
+
 		frappe.call({
 			"method": "frappe.utils.change_log.show_update_popup"
 		});
@@ -620,6 +617,19 @@ frappe.Application = Class.extend({
 				//
 			}
 		});
+	},
+
+	setup_moment() {
+		moment.updateLocale('en', {
+			week: {
+				dow: frappe.datetime.get_first_day_of_the_week_index(),
+			}
+		});
+		moment.locale("en");
+		moment.user_utc_offset = moment().utcOffset();
+		if (frappe.boot.timezone_info) {
+			moment.tz.add(frappe.boot.timezone_info);
+		}
 	}
 });
 
